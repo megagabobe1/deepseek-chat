@@ -1,27 +1,27 @@
 const express = require("express");
-const axios = require("axios");
-const cors = require("cors");
-require("dotenv").config();
-
 const app = express();
+const port = process.env.PORT || 3000;
+
+// Middleware to parse JSON
 app.use(express.json());
-app.use(cors());
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY; // Store API Key in .env file
-
-app.post("/chat", async (req, res) => {
-    try {
-        const response = await axios.post("https://api.deepseek.com/v1/chat/completions", {
-            model: "deepseek-chat",
-            messages: req.body.messages,
-        }, {
-            headers: { "Authorization": `Bearer ${DEEPSEEK_API_KEY}` }
-        });
-
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+// Test route for "/"
+app.get("/", (req, res) => {
+    res.send("Server is running!");
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+// Your chatbot API route
+app.post("/chat", async (req, res) => {
+    const userMessage = req.body.message;
+
+    if (!userMessage) {
+        return res.status(400).json({ error: "Message is required" });
+    }
+
+    res.json({ response: `You said: ${userMessage}` });
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
