@@ -1,20 +1,14 @@
 const express = require("express");
 const cors = require("cors");
-const app = express();
-const port = process.env.PORT || 3000;
+const axios = require("axios"); // Import axios for API requests
+require("dotenv").config(); // Load environment variables
 
-// Enable CORS (important for Wix)
+const app = express();
+app.use(express.json());
 app.use(cors());
 
-// Middleware to parse JSON
-app.use(express.json());
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY; // Make sure this is set in Render's environment variables
 
-// Test route for "/"
-app.get("/", (req, res) => {
-    res.send("Server is running!");
-});
-
-// Chatbot API route (POST request)
 app.post("/chat", async (req, res) => {
     const userMessage = req.body.message;
 
@@ -22,11 +16,30 @@ app.post("/chat", async (req, res) => {
         return res.status(400).json({ error: "Message is required" });
     }
 
-    // Simulate a chatbot response (replace with DeepSeek API)
-    res.json({ response: `You said: ${userMessage}` });
+    try {
+        const response = await axios.post(
+            "https://api.deepseek.com/chat", // Replace with DeepSeek's actual API endpoint
+            {
+                message: userMessage
+            },
+            {
+                headers: {
+                    "Authorization": `Bearer ${DEEPSEEK_API_KEY}`, // Use your API key
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        const aiResponse = response.data.response; // Get AI-generated response
+
+        res.json({ response: aiResponse });
+    } catch (error) {
+        console.error("Error calling DeepSeek API:", error);
+        res.status(500).json({ error: "Failed to fetch AI response" });
+    }
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
