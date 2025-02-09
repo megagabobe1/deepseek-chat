@@ -1,13 +1,13 @@
-const express = require("express");
+﻿const express = require("express");
 const cors = require("cors");
-const axios = require("axios"); // Import axios for API requests
+const axios = require("axios");
 require("dotenv").config(); // Load environment variables
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY; // Make sure this is set in Render's environment variables
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY; // API Key from .env
 
 app.post("/chat", async (req, res) => {
     const userMessage = req.body.message;
@@ -18,23 +18,23 @@ app.post("/chat", async (req, res) => {
 
     try {
         const response = await axios.post(
-            "https://api.deepseek.com/chat", // Replace with DeepSeek's actual API endpoint
+            "https://api.deepseek.com/v1/chat/completions", // ✅ Correct DeepSeek API URL
             {
-                message: userMessage
+                model: "deepseek-chat",
+                messages: [{ role: "user", content: userMessage }]
             },
             {
                 headers: {
-                    "Authorization": `Bearer ${DEEPSEEK_API_KEY}`, // Use your API key
+                    "Authorization": `Bearer ${DEEPSEEK_API_KEY}`, // ✅ Ensure this is correct
                     "Content-Type": "application/json"
                 }
             }
         );
 
-        const aiResponse = response.data.response; // Get AI-generated response
-
+        const aiResponse = response.data.choices[0].message.content; // ✅ Extract AI response
         res.json({ response: aiResponse });
     } catch (error) {
-        console.error("Error calling DeepSeek API:", error);
+        console.error("Error calling DeepSeek API:", error.response?.data || error.message);
         res.status(500).json({ error: "Failed to fetch AI response" });
     }
 });
