@@ -6,19 +6,19 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
-// ✅ Enable CORS for all origins (required for Wix)
+// ✅ Allow all CORS origins for now (adjust later if needed)
 app.use(cors({
     origin: "*",
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["POST", "GET", "OPTIONS"],
     allowedHeaders: ["Content-Type"]
 }));
 
 const OLLAMA_API_URL = "http://localhost:11434/api/generate";
 
-// ✅ Serve the frontend (index.html) from the `public` folder
+// ✅ Serve static files from "public" folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Handle chatbot requests
+// ✅ Chat API Endpoint
 app.post("/chat", async (req, res) => {
     try {
         console.log("Received request:", req.body);
@@ -57,13 +57,13 @@ app.post("/chat", async (req, res) => {
     }
 });
 
-// ✅ Handle OPTIONS Preflight Requests (Important for CORS!)
-app.options("/chat", (req, res) => {
-    res.sendStatus(200);
+// ✅ Ensure "/" loads index.html properly
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ✅ Start Server
+// ✅ Allow external access via Render
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
     console.log(`✅ Server running at: http://localhost:${PORT}`);
 });
