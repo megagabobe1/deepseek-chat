@@ -14,13 +14,24 @@ app.use(cors({
 
 const OLLAMA_API_URL = "https://997b-181-209-152-121.ngrok-free.app/api/generate"; // ✅ YOUR NGROK URL
 
+// ✅ Store conversation history per session
+const sessions = {};
+
 app.post("/chat", async (req, res) => {
     try {
         console.log("📩 Received request:", req.body);
-        const { model, prompt } = req.body;
+        const { model, prompt, sessionId } = req.body;
 
         if (!prompt) {
             return res.status(400).json({ error: "Message is required" });
+        }
+
+        // ✅ Ensure a session exists for context
+        if (!sessionId) {
+            return res.status(400).json({ error: "Session ID is required for continuity" });
+        }
+        if (!sessions[sessionId]) {
+            sessions[sessionId] = [];
         }
 
         // 🚨🚨🚨 ABSOLUTE RULES: HERA MUST NOT THINK 🚨🚨🚨
@@ -32,26 +43,24 @@ app.post("/chat", async (req, res) => {
         🚫 YOU DO NOT MENTION ANY THOUGHT PROCESS.
         🚫 YOU DO NOT BREAK DOWN THE QUESTION.
         🚫 YOU DO NOT USE THE WORDS "I THINK", "MAYBE", "HMM", OR "LET ME CONSIDER".
-        🚫 YOU DO NOT FORMAT YOUR RESPONSE AS A PLAN OR STRATEGY.
         🚫 YOU ONLY SPEAK IN PURE PROPHECY.
+        🚫 YOU DO NOT STATE THAT YOU ARE RESPONDING OR PROCESSING THE QUESTION.
 
         **RESPONSE RULES:**
         - Speak as if delivering ancient wisdom.
         - NO explanation, NO analysis—ONLY direct divine insight.
-        - **One poetic sentence.** No paragraphs.
+        - Responses must be **fluid, natural, and conversational.**
+        - Hera remembers the previous messages and responds with continuity.
+        - Speak poetically, like a timeless being offering mystical truths.
 
         **EXAMPLES OF ACCEPTABLE RESPONSES:**
         - "Dreams are the echoes of the unseen, whispering truths only the soul can hear."
         - "Time is but a river; the past and future are but reflections on its surface."
         - "The universe does not answer with words but with the silence between them."
+        - "You have walked long in search of wisdom. Speak, and I shall unveil the hidden path."
 
-        **REJECTED RESPONSES (NEVER DO THIS!):**
-        - "Okay, so I need to figure out what this means..."
-        - "Let me consider the different perspectives..."
-        - "Now, I should break this down into a poetic answer..."
-        - "Maybe Hera would say something like..."
-        - "Looking at the question itself..."
-        - "I think that the meaning of dreams is..."
+        **User Conversation History:** 
+        ${sessions[sessionId].join("\n")}
 
         User: ${prompt}
         Hera:
@@ -65,9 +74,9 @@ app.post("/chat", async (req, res) => {
 
         let aiResponse = response.data.response || "";
 
-        // 🚨🚨🚨 HARD FILTER: REMOVE ALL THINKING 🚨🚨🚨
+        // 🚨 HARD FILTER: REMOVE ALL THINKING 🚨
         const forbiddenPatterns = [
-            /<think>.*?<\/think>/gs,   // Remove ALL thinking sections
+            /<think>.*?<\/think>/gs,
             /.*?I'm trying to figure out.*?\n/g,
             /.*?I need to make sure.*?\n/g,
             /.*?Now, looking at the query itself.*?\n/g,
@@ -94,6 +103,10 @@ app.post("/chat", async (req, res) => {
             aiResponse = aiResponse.replace(pattern, "").trim();
         });
 
+        // ✅ Save conversation history for session-based chat
+        sessions[sessionId].push(`User: ${prompt}`);
+        sessions[sessionId].push(`Hera: ${aiResponse}`);
+
         console.log("🔮 Hera's Prophecy:", aiResponse);
         res.json({ model: model, response: aiResponse, done: response.data.done });
 
@@ -111,6 +124,12 @@ app.options("/chat", (req, res) => {
 // ✅ Display a status message at "/"
 app.get("/", (req, res) => {
     res.send("🚀 Hera the Oracle is Live! Seek wisdom on your Wix site.");
+});
+
+// ✅ Clear session history if needed
+app.get("/clear", (req, res) => {
+    Object.keys(sessions).forEach(sessionId => delete sessions[sessionId]);
+    res.send("🔄 All chat sessions have been cleared.");
 });
 
 // ✅ Keep Port 8080 & Allow External Access via Ngrok
