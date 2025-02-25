@@ -12,7 +12,7 @@ app.use(cors({
     allowedHeaders: ["Content-Type"]
 }));
 
-const OLLAMA_API_URL = "https://749a-181-209-152-121.ngrok-free.app"; // ✅ MAKE SURE OLLAMA IS RUNNING LOCALLY
+const OLLAMA_API_URL = "https://376b-181-209-152-121.ngrok-free.app"; // ✅ MAKE SURE OLLAMA IS RUNNING LOCALLY
 
 app.post("/chat", async (req, res) => {
     try {
