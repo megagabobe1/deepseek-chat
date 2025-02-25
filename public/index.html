@@ -1,81 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with AI</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-            color: #333;
-        }
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const API_URL = "https://deepseek-chat.onrender.com/chat"; // Update with your Render URL
 
-        #chatbox {
-            width: 100%;
-            height: 400px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            overflow-y: auto;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        #userInput {
-            width: 80%;
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        #sendButton {
-            padding: 10px 20px;
-            margin-left: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-            #sendButton:hover {
-                background-color: #0056b3;
-            }
-
-        .message {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 4px;
-        }
-
-        .user-message {
-            background-color: #e3f2fd;
-            text-align: right;
-        }
-
-        .ai-message {
-            background-color: #f5f5f5;
-            text-align: left;
-        }
-
-        strong {
-            color: #007bff;
-        }
-    </style>
-</head>
-<body>
-    <h1>Chat with AI</h1>
-    <div id="chatbox"></div>
-    <input type="text" id="userInput" placeholder="Type your message..." />
-    <button id="sendButton" onclick="sendMessage()">Send</button>
-
-    <script>
-        const API_URL = "https://ai-chatbox-mgvi.onrender.com/chat"; // Fixed API endpoint
+        document.getElementById("sendButton").addEventListener("click", sendMessage);
 
         async function sendMessage() {
             let inputField = document.getElementById("userInput");
@@ -85,11 +12,10 @@
             let chatbox = document.getElementById("chatbox");
 
             // Display the user's message
-            chatbox.innerHTML += `
-                        <div class="message user-message">
-                            <p><strong>You:</strong> ${message}</p>
-                        </div>
-                    `;
+            let userMessageElement = document.createElement("div");
+            userMessageElement.className = "message user-message";
+            userMessageElement.innerHTML = `<p><strong>You:</strong> ${message}</p>`;
+            chatbox.appendChild(userMessageElement);
             inputField.value = "";
 
             try {
@@ -118,13 +44,11 @@
 
             } catch (error) {
                 console.error("Error fetching response:", error);
-                chatbox.innerHTML += `
-                            <div class="message ai-message">
-                                <p><strong>AI:</strong> Error communicating with the server.</p>
-                            </div>
-                        `;
+                let errorMessageElement = document.createElement("div");
+                errorMessageElement.className = "message ai-message";
+                errorMessageElement.innerHTML = `<p><strong>AI:</strong> Error communicating with the server.</p>`;
+                chatbox.appendChild(errorMessageElement);
             }
         }
-    </script>
-</body>
-</html>
+    });
+</script>
