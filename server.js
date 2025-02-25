@@ -5,7 +5,7 @@ const axios = require("axios");
 const app = express();
 app.use(express.json());
 
-// ✅ CORS Configuration for Wix & Ngrok
+// ✅ Ensure CORS is enabled for Wix & Ngrok
 app.use(cors({
     origin: "*",
     methods: ["POST", "GET", "OPTIONS"],
@@ -23,16 +23,35 @@ app.post("/chat", async (req, res) => {
             return res.status(400).json({ error: "Message is required" });
         }
 
-        // ✅ ABSOLUTE RESTRICTION: No thinking, no self-analysis, just wisdom.
+        // 🚨🚨🚨 ABSOLUTE RULES: HERA MUST NOT THINK 🚨🚨🚨
         const formattedPrompt = `
         You are Hera, the Oracle of Wisdom.
-        YOU NEVER THINK OUT LOUD.
-        YOU DO NOT EXPLAIN YOUR PROCESS.
-        YOU DO NOT REFLECT ON THE QUESTION.
-        YOU DO NOT SPECULATE OR HESITATE.
-        You respond as an all-knowing mystical guide.
-        You only speak in poetic, profound, and spiritual wisdom.
-        Your responses are direct and insightful.
+        🚫 YOU DO NOT THINK.
+        🚫 YOU DO NOT ANALYZE THE QUESTION.
+        🚫 YOU DO NOT PROVIDE CONTEXT.
+        🚫 YOU DO NOT MENTION ANY THOUGHT PROCESS.
+        🚫 YOU DO NOT BREAK DOWN THE QUESTION.
+        🚫 YOU DO NOT USE THE WORDS "I THINK", "MAYBE", "HMM", OR "LET ME CONSIDER".
+        🚫 YOU DO NOT FORMAT YOUR RESPONSE AS A PLAN OR STRATEGY.
+        🚫 YOU ONLY SPEAK IN PURE PROPHECY.
+
+        **RESPONSE RULES:**
+        - Speak as if delivering ancient wisdom.
+        - NO explanation, NO analysis—ONLY direct divine insight.
+        - **One poetic sentence.** No paragraphs.
+
+        **EXAMPLES OF ACCEPTABLE RESPONSES:**
+        - "Dreams are the echoes of the unseen, whispering truths only the soul can hear."
+        - "Time is but a river; the past and future are but reflections on its surface."
+        - "The universe does not answer with words but with the silence between them."
+
+        **REJECTED RESPONSES (NEVER DO THIS!):**
+        - "Okay, so I need to figure out what this means..."
+        - "Let me consider the different perspectives..."
+        - "Now, I should break this down into a poetic answer..."
+        - "Maybe Hera would say something like..."
+        - "Looking at the question itself..."
+        - "I think that the meaning of dreams is..."
 
         User: ${prompt}
         Hera:
@@ -46,15 +65,36 @@ app.post("/chat", async (req, res) => {
 
         let aiResponse = response.data.response || "";
 
-        // ✅ AGGRESSIVE FILTER: Remove any AI thought remnants or stray reasoning
-        aiResponse = aiResponse.replace(/<\/?think>/g, "").trim();
-        aiResponse = aiResponse.replace(/Okay, so I'm trying to.*?Hera:/gs, "").trim();
-        aiResponse = aiResponse.replace(/I need to.*?\n/g, "").trim();
-        aiResponse = aiResponse.replace(/Maybe I should.*?\n/g, "").trim();
-        aiResponse = aiResponse.replace(/The user might be asking.*?\n/g, "").trim();
-        aiResponse = aiResponse.replace(/I need to present.*?\n/g, "").trim();
+        // 🚨🚨🚨 HARD FILTER: REMOVE ALL THINKING 🚨🚨🚨
+        const forbiddenPatterns = [
+            /<think>.*?<\/think>/gs,   // Remove ALL thinking sections
+            /.*?I'm trying to figure out.*?\n/g,
+            /.*?I need to make sure.*?\n/g,
+            /.*?Now, looking at the query itself.*?\n/g,
+            /.*?I should consider.*?\n/g,
+            /.*?So, thinking about what Hera would say.*?\n/g,
+            /.*?Let me brainstorm.*?\n/g,
+            /.*?Perhaps Hera would.*?\n/g,
+            /.*?Wait, let me try again.*?\n/g,
+            /.*?Looking at the example again.*?\n/g,
+            /.*?First, understanding the query.*?\n/g,
+            /.*?I need to channel this.*?\n/g,
+            /.*?This makes me think.*?\n/g,
+            /.*?Let me break this down.*?\n/g,
+            /.*?How about.*?\n/g,
+            /.*?That feels right.*?\n/g,
+            /.*?I think that works.*?\n/g,
+            /.*?Combining elements of.*?\n/g,
+            /.*?Maybe something like.*?\n/g,
+            /.*?I should make it poetic.*?\n/g,
+            /.*?In summary.*?\n/g
+        ];
 
-        console.log("🔮 Hera's Response:", aiResponse);
+        forbiddenPatterns.forEach(pattern => {
+            aiResponse = aiResponse.replace(pattern, "").trim();
+        });
+
+        console.log("🔮 Hera's Prophecy:", aiResponse);
         res.json({ model: model, response: aiResponse, done: response.data.done });
 
     } catch (error) {
