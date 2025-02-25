@@ -13,7 +13,7 @@ app.use(cors({
     allowedHeaders: ["Content-Type"]
 }));
 
-const OLLAMA_API_URL = "https://4029-181-209-152-121.ngrok-free.app/api/generate";
+const OLLAMA_API_URL = "https://65cb-181-209-152-121.ngrok-free.app/api/generate";
 
 // ✅ Serve Static Files from Public Folder
 app.use(express.static(path.join(__dirname, "public")));
