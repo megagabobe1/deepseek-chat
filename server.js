@@ -1,24 +1,20 @@
 ﻿const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const path = require("path");
 
 const app = express();
 app.use(express.json());
 
-// ✅ Allow all CORS origins for now (adjust later if needed)
+// ✅ Fix CORS issue
 app.use(cors({
     origin: "*",
     methods: ["POST", "GET", "OPTIONS"],
     allowedHeaders: ["Content-Type"]
 }));
 
-const OLLAMA_API_URL = "http://localhost:11434/api/generate";
+// ✅ Replace Ollama with DeepSeek API (publicly available)
+const API_URL = "https://api.deepseek.com/v1/completions"; // Replace with actual API endpoint
 
-// ✅ Serve static files from "public" folder
-app.use(express.static(path.join(__dirname, "public")));
-
-// ✅ Chat API Endpoint
 app.post("/chat", async (req, res) => {
     try {
         console.log("Received request:", req.body);
@@ -28,42 +24,29 @@ app.post("/chat", async (req, res) => {
             return res.status(400).json({ error: "Message is required" });
         }
 
-        const formattedPrompt = `
-        You are an AI assistant.
-        ONLY provide direct responses to the user's message.
-        DO NOT include "<think>" tags or descriptions of your thought process.
-        DO NOT explain how you generate responses.
-        DO NOT apologize—just answer concisely like a human.
-
-        User: ${prompt}
-        AI:
-        `;
-
-        const response = await axios.post(OLLAMA_API_URL, {
-            model: model || "deepseek-r1:8b",
-            prompt: formattedPrompt,
-            stream: false
+        const response = await axios.post(API_URL, {
+            model: "deepseek-chat",
+            messages: [{ role: "user", content: prompt }]
+        }, {
+            headers: {
+                "Authorization": `Bearer YOUR_DEEPSEEK_API_KEY`, // Replace with your DeepSeek API Key
+                "Content-Type": "application/json"
+            }
         });
 
-        let aiResponse = response.data.response || "";
-        aiResponse = aiResponse.replace(/<\/?think>/g, "").trim();
-
-        console.log("Clean AI Response:", aiResponse);
-        res.json({ model: model, response: aiResponse, done: response.data.done });
+        res.json({ model: model, response: response.data.choices[0].message.content });
 
     } catch (error) {
-        console.error("Error calling Ollama:", error.response?.data || error.message);
-        res.status(500).json({ error: "Error calling Ollama API" });
+        console.error("Error calling DeepSeek API:", error.message);
+        res.status(500).json({ error: "Error calling DeepSeek API" });
     }
 });
 
-// ✅ Ensure "/" loads index.html properly
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+// ✅ Serve Chatbox on "/"
+app.use(express.static("public"));
 
-// ✅ Allow external access via Render
+// ✅ Start the server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-    console.log(`✅ Server running at: http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`✅ Server running at: https://deepseek-chat.onrender.com`);
 });
