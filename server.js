@@ -12,7 +12,7 @@ app.use(cors({
     allowedHeaders: ["Content-Type"]
 }));
 
-const OLLAMA_API_URL = "https://0e32-181-209-152-121.ngrok-free.app/api/generate"; // ✅ YOUR NGROK URL
+const OLLAMA_API_URL = "https://64dd-181-209-152-121.ngrok-free.app/api/generate"; // ✅ YOUR NGROK URL
 
 // ✅ Store conversation history per session
 const sessions = {};
